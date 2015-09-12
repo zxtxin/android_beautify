@@ -30,7 +30,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     int[] mScreenSize;// 屏幕尺寸
     // 视野窗口位置及尺寸
     int mLeft, mTop, mWidth, mHeight;
-    private float threshold = 150f/255;
+    private float threshold = 15f/255;
     private DiscreteGaussianFilter discreteGaussianFilter;
 
     public GLRenderer(Context context, Camera.Size size, int pixelAmounts) {
