@@ -1,6 +1,6 @@
  attribute vec4 position;
  attribute vec4 inputTextureCoordinate;
- const int N = 15;
+ const int N = 13;
  varying vec2 blurCoords[N];
  uniform bool dir;
  uniform float texelWidth;

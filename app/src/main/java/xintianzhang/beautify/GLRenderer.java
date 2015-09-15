@@ -23,14 +23,14 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     public FilterBase filter;
     private float beta = 2.0f;
 //    private RGBFilter rgbFilter;
- //   private GaussianSelectiveFilter gaussianSelectiveFilter;
+
     OpenGLESSupervisor glesInstance;
     private byte[] rawData;
     private boolean drawFrameFinished = false;
     int[] mScreenSize;// 屏幕尺寸
     // 视野窗口位置及尺寸
     int mLeft, mTop, mWidth, mHeight;
-    private float threshold = 15f/255;
+    private float threshold = 21f/255;
     private DiscreteGaussianFilter discreteGaussianFilter;
 
     public GLRenderer(Context context, Camera.Size size, int pixelAmounts) {
@@ -44,7 +44,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glesInstance = new OpenGLESSupervisor(context);
     //    rgbFilter = new RGBFilter(glesInstance);
-  //      gaussianSelectiveFilter = new GaussianSelectiveFilter(glesInstance);
+
         discreteGaussianFilter = new DiscreteGaussianFilter(glesInstance);
         filter = discreteGaussianFilter;
         mScreenSize = getScreenSize(context);// 获取屏幕尺寸
