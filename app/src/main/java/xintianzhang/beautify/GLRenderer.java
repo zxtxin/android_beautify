@@ -21,8 +21,6 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private final Camera.Size mPreviewSize;
     private Context context;
     public FilterBase filter;
-    private float beta = 2.0f;
-//    private RGBFilter rgbFilter;
 
     OpenGLESSupervisor glesInstance;
     private byte[] rawData;
@@ -31,7 +29,13 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     // 视野窗口位置及尺寸
     int mLeft, mTop, mWidth, mHeight;
     private float threshold = 21f/255;
-    private DiscreteGaussianFilter discreteGaussianFilter;
+    private GaussianSigma3Filter gaussianSigma3Filter;
+    private GaussianSigma1Filter gaussianSigma1Filter;
+    private GaussianSigma10Filter gaussianSigma10Filter;
+    private RawFilter rawFilter;
+    private boolean filterSetting = false;
+    private int whiten =0;
+    private float alpha = 0.0f;
 
     public GLRenderer(Context context, Camera.Size size, int pixelAmounts) {
         this.context = context;
@@ -43,10 +47,11 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glesInstance = new OpenGLESSupervisor(context);
-    //    rgbFilter = new RGBFilter(glesInstance);
-
-        discreteGaussianFilter = new DiscreteGaussianFilter(glesInstance);
-        filter = discreteGaussianFilter;
+        gaussianSigma10Filter = new GaussianSigma10Filter(glesInstance);
+   //     gaussianSigma1Filter = new GaussianSigma1Filter(glesInstance);
+    //    gaussianSigma3Filter = new GaussianSigma3Filter(glesInstance);
+     //   rawFilter = new RawFilter(glesInstance);
+        filter = gaussianSigma10Filter;
         mScreenSize = getScreenSize(context);// 获取屏幕尺寸
         setViewPortSize(0, 0, 100);// 设置初始视野窗口位置及尺寸
     }
@@ -65,9 +70,11 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         if(rawData!=null) {
             drawFrameFinished = false;
+            while(filterSetting==true);
+
 //            long startTime, endTime;
 //            startTime=System.nanoTime();// 获取开始时间
-            filter.draw(rawData,mPreviewSize ,pixelAmounts,beta, threshold);
+            filter.draw(rawData,mPreviewSize ,pixelAmounts, threshold, alpha,whiten);
 //            endTime=System.nanoTime();// 获取结束时间
 //            Log.i("onDrawFrame运行时间：", (endTime - startTime) + "ns");
             drawFrameFinished = true;
@@ -85,12 +92,38 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         return screenSize;
     }
 
-    public void setFilter(boolean choose_filter)
+    public void setRawFilter()
     {
-
-        filter = discreteGaussianFilter;
-
+        while (drawFrameFinished==false);
+        filterSetting = true;
+        filter = rawFilter;
         filter.setViewPort(mLeft, mTop, mWidth, mHeight);
+        filterSetting = false;
+
+    }
+    public void setGaussianSigma1Filter()
+    {
+        while (drawFrameFinished==false);
+        filterSetting = true;
+        filter = gaussianSigma1Filter;
+        filter.setViewPort(mLeft, mTop, mWidth, mHeight);
+        filterSetting = false;
+    }
+    public void setGaussianSigma3Filter()
+    {
+        while (drawFrameFinished==false);
+        filterSetting = true;
+        filter =gaussianSigma3Filter;
+        filter.setViewPort(mLeft, mTop, mWidth, mHeight);
+        filterSetting = false;
+    }
+    public void setGaussianSigma10Filter()
+    {
+        while (drawFrameFinished==false);
+        filterSetting = true;
+        filter = gaussianSigma10Filter;
+        filter.setViewPort(mLeft, mTop, mWidth, mHeight);
+        filterSetting = false;
     }
 
     public void setViewPortSize(int viewX, int viewY, int percentageOfSize)
@@ -103,11 +136,10 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         filter.setViewPort(mLeft, mTop, mWidth, mHeight);
     }
 
-    public boolean getDrawFrameStatus() {
-        return drawFrameFinished;
+
+    public void setAlpha(float alpha) {
+        this.alpha = alpha;
     }
-    public void setBeta(float beta) {
-        this.beta = beta;
-    }
+    public void setWhiten(int whiten){ this.whiten = whiten;}
 
 }

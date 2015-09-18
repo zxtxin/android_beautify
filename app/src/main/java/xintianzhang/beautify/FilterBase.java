@@ -22,6 +22,6 @@ public abstract class FilterBase {
         this.viewWidth = width;
         this.viewHeight = height;
     }
-    abstract public void draw(byte[] frameData, Camera.Size size, int pixelAmounts, float beta,float epsilon);
+    abstract public void draw(byte[] frameData, Camera.Size size, int pixelAmounts, float threshold, float alpha, int whiten);
 
 }

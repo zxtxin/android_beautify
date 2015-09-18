@@ -4,13 +4,12 @@ import android.hardware.Camera;
 import android.opengl.GLES20;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 /**
  * Created by Administrator on 2015/9/10.
  */
-public class DiscreteGaussianFilter extends FilterBase{
+public class GaussianSigma1Filter extends FilterBase{
 
     private final int[] tex;
     private final FloatBuffer vertexBuffer;
@@ -21,31 +20,23 @@ public class DiscreteGaussianFilter extends FilterBase{
     private final int heightUniform;
     private final int luminanceTexUniform;
     private final int chrominanceTextureUniform;
-//    private final int betaUniform;
-    private final int thresholdUniform;
-    static final float firstProgramTextureCoords[] = {
-            0.0f,1.0f,
-            0.0f,0.0f,
-            1.0f,0.0f,
-            1.0f,1.0f,
 
-    };
+    private final int thresholdUniform;
     private final FloatBuffer firstProgramtextureCoordinateBuffer;
     private final int program;
     private final int procedure_2;
     private final int positionAttr_2;
     private final int texCoordAttr_2;
- //   private final int widthUniform_2;
-   // private final int heightUniform_2;
+
     private final int luminanceTexUniform_2;
     private final int[] fbo;
     private final int dirUniform;
-    private final int rawLumTexUniform;
 
-    public DiscreteGaussianFilter(OpenGLESSupervisor instance) {
+
+    public GaussianSigma1Filter(OpenGLESSupervisor instance) {
         super(instance);
         fbo = glInstance.getFBO();
-        program = glInstance.buildShaderProgram(R.raw.gaussian_vertex, R.raw.gaussian_fragment);
+        program = glInstance.buildShaderProgram(R.raw.gaussian_vertex, R.raw.gaussian_sigma1_fragment);
         tex = glInstance.getTex();
         vertexBuffer = glInstance.getVertexBuffer();
         textureCoordinateBuffer = glInstance.getTextureCoordinatesBuffer();
@@ -57,23 +48,21 @@ public class DiscreteGaussianFilter extends FilterBase{
         dirUniform = GLES20.glGetUniformLocation(program, "dir");
 
         thresholdUniform = GLES20.glGetUniformLocation(program, "threshold");
-        ByteBuffer tmp = ByteBuffer.allocateDirect(firstProgramTextureCoords.length * 4);
-        tmp.order(ByteOrder.nativeOrder());
-        firstProgramtextureCoordinateBuffer = tmp.asFloatBuffer();
-        firstProgramtextureCoordinateBuffer.put(firstProgramTextureCoords).position(0);
+
+        firstProgramtextureCoordinateBuffer = glInstance.getFirstProgramtextureCoordinateBuffer();
+
         procedure_2 = glInstance.buildShaderProgram(R.raw.yuv2rgb_vertex, R.raw.yuv2rgb_fragment);
         positionAttr_2 = GLES20.glGetAttribLocation(procedure_2, "position");
         texCoordAttr_2 = GLES20.glGetAttribLocation(procedure_2, "inputTextureCoordinate");
-//        widthUniform_2 =GLES20.glGetUniformLocation(procedure_2, "texelWidth");
-//        heightUniform_2 =GLES20.glGetUniformLocation(procedure_2, "texelHeight");
+
         luminanceTexUniform_2 = GLES20.glGetUniformLocation(procedure_2, "luminanceTex");
         chrominanceTextureUniform =  GLES20.glGetUniformLocation(procedure_2, "chrominanceTex");
-  //      betaUniform = GLES20.glGetUniformLocation(procedure_2, "beta");
-        rawLumTexUniform = GLES20.glGetUniformLocation(procedure_2,"rawLumTex");
+
+
     }
 
     @Override
-    public void draw(byte[] frameData_byte, Camera.Size size, int pixelAmounts, float beta, float threshold) {
+    public void draw(byte[] frameData_byte, Camera.Size size, int pixelAmounts, float threshold, float alpha, int whiten) {
         ByteBuffer frameData = ByteBuffer.wrap(frameData_byte);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         GLES20.glViewport(0, 0, size.width, size.height);
@@ -125,19 +114,11 @@ public class DiscreteGaussianFilter extends FilterBase{
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[1]);
         GLES20.glUniform1i(luminanceTexUniform_2, 0);
-        frameData.position(0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE, size.width, size.height, 0, GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE, frameData);
-        GLES20.glUniform1i(rawLumTexUniform, 1);
         frameData.position(pixelAmounts);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE2);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[2]);
         GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE_ALPHA, size.width / 2, size.height / 2, 0, GLES20.GL_LUMINANCE_ALPHA, GLES20.GL_UNSIGNED_BYTE, frameData);
         GLES20.glUniform1i(chrominanceTextureUniform, 2);
-    //    GLES20.glUniform1f(betaUniform, beta);
- //       GLES20.glUniform1f(heightUniform_2, 1.0f / size.height);
- //       GLES20.glUniform1f(widthUniform_2, 1.0f / size.width);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
         GLES20.glDisableVertexAttribArray(positionAttr_2);

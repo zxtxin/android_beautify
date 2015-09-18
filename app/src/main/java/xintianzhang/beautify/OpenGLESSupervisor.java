@@ -18,6 +18,7 @@ import static android.opengl.GLES20.glValidateProgram;
  * Created by zxtxin on 2014/12/3.
  */
 public class OpenGLESSupervisor {
+    private final FloatBuffer firstProgramtextureCoordinateBuffer;
     private Context mContext;
     private FloatBuffer vertexBuffer, textureCoordinatesBuffer;
     private int[] tex;
@@ -27,18 +28,26 @@ public class OpenGLESSupervisor {
             -1.0f,-1.0f,
             1.0f,-1.0f,
             1.0f,1.0f,
-
     };
     static final float textureVertices[] = {
             1.0f, 1.0f,
             0.0f,1.0f,
             0.0f, 0.0f,
             1.0f,0.0f,
+    };
 
 
 
+    static final float firstProgramTextureCoords[] = {
+            0.0f,1.0f,
+            0.0f,0.0f,
+            1.0f,0.0f,
+            1.0f,1.0f,
 
     };
+
+
+
     public OpenGLESSupervisor(Context context) {
         mContext = context;
         ByteBuffer bb = ByteBuffer.allocateDirect(squareCoords.length * 4);
@@ -49,10 +58,15 @@ public class OpenGLESSupervisor {
         bb2.order(ByteOrder.nativeOrder());
         textureCoordinatesBuffer = bb2.asFloatBuffer();
         textureCoordinatesBuffer.put(textureVertices).position(0);
+        ByteBuffer tmp = ByteBuffer.allocateDirect(firstProgramTextureCoords.length * 4);
+        tmp.order(ByteOrder.nativeOrder());
+        firstProgramtextureCoordinateBuffer = tmp.asFloatBuffer();
+        firstProgramtextureCoordinateBuffer.put(firstProgramTextureCoords).position(0);
         tex = createTexture(4);
         fbo = createFrameBuffer(2);
 
     }
+    public FloatBuffer getFirstProgramtextureCoordinateBuffer() { return firstProgramtextureCoordinateBuffer;  }
     public FloatBuffer getVertexBuffer(){return vertexBuffer;}
     public FloatBuffer getTextureCoordinatesBuffer(){return textureCoordinatesBuffer;}
     public int[] getTex(){return tex;}

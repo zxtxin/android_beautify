@@ -14,15 +14,19 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
 import java.io.IOException;
 import android.view.ViewGroup.LayoutParams;
-public class MainActivity extends Activity implements SurfaceHolder.Callback, Camera.PreviewCallback, SeekBar.OnSeekBarChangeListener {
+import android.widget.ToggleButton;
+
+public class MainActivity extends Activity implements SurfaceHolder.Callback, Camera.PreviewCallback{
 
     private GLSurfaceView glSurfaceView;
     private GLRenderer renderer;
@@ -35,7 +39,7 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ca
     private SurfaceView surfaceView;
     private SurfaceHolder mHolder;
     private SeekBar seekBar;
-
+    private ToggleButton toggleButton;
 
 
 
@@ -48,9 +52,8 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ca
         setContentView(R.layout.activity_main);
         RelativeLayout top=(RelativeLayout)findViewById(R.id.relative_layout);
         surfaceView = (SurfaceView)findViewById(R.id.surfaceView);
-        seekBar= (SeekBar)findViewById(R.id.seekBar);
         glSurfaceView = (GLSurfaceView)findViewById(R.id.glSurfaceView);
-
+   //     radioGroup = (RadioGroup)findViewById(R.id.radio_group);
         mHolder = surfaceView.getHolder();
         mHolder.addCallback(this);
 
@@ -64,11 +67,54 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ca
         glSurfaceView.setEGLContextClientVersion(2);
         glSurfaceView.setRenderer(renderer);
         glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+ /*       radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.radioButton0:
+                        renderer.setRawFilter();
+                        break;
+                    case R.id.radioButton1:
+                        renderer.setGaussianSigma1Filter();
+                        break;
+                    case R.id.radioButton2:
+                        renderer.setGaussianSigma3Filter();
+                        break;
+                    case R.id.radioButton3:
+                        renderer.setGaussianSigma10Filter();
+                        break;
+                    default:
+                }
+            }
+        });*/
+        seekBar = (SeekBar)findViewById(R.id.seekBar);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    renderer.setAlpha(progress/100f);
+            }
 
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
 
+            }
 
-        seekBar.bringToFront();
-        seekBar.setOnSeekBarChangeListener(this);
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        toggleButton = (ToggleButton)findViewById(R.id.toggleButton);
+        toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked)
+                    renderer.setWhiten(1);
+                else
+                    renderer.setWhiten(0);
+            }
+        });
+
         top.setKeepScreenOn(true);
 
     }
@@ -158,20 +204,6 @@ public class MainActivity extends Activity implements SurfaceHolder.Callback, Ca
     }
 
 
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        renderer.setBeta(0.05f*progress+2.0f);
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
-    }
 
 
 }
